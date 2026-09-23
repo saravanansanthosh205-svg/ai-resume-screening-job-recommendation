@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -16,25 +18,48 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='style.css') }}"
     >
+
 </head>
+
 
 <body>
 
-<!-- ================= NAVBAR ================= -->
+
+<!-- =====================================================
+     NAVBAR
+===================================================== -->
 
 <nav class="navbar">
 
     <div class="nav-container">
 
         <div class="logo">
-            AI Resume Analyzer
+
+            <span class="logo-icon">
+                AI
+            </span>
+
+            <span>
+                ResumeAI
+            </span>
+
         </div>
 
+
         <div class="nav-links">
-            <a href="#home">Home</a>
-            <a href="#features">Features</a>
-            <a href="#analyzer">Analyzer</a>
-            <a href="#about">About</a>
+
+            <a href="#home">
+                Home
+            </a>
+
+            <a href="#features">
+                Features
+            </a>
+
+            <a href="#analyze">
+                Analyze
+            </a>
+
         </div>
 
     </div>
@@ -42,46 +67,63 @@
 </nav>
 
 
-<!-- ================= HERO ================= -->
+<!-- =====================================================
+     HERO
+===================================================== -->
 
-<section class="hero" id="home">
+<section
+    class="hero"
+    id="home"
+>
 
-    <div class="hero-container">
+    <div class="hero-content">
 
-        <div class="hero-content">
+        <div class="hero-badge">
+            🤖 AI POWERED RESUME ANALYSIS
+        </div>
 
-            <span class="hero-badge">
-                🤖 AI POWERED RESUME ANALYSIS
+
+        <h1>
+
+            AI Resume Screening
+            <span>
+                & Job Recommendation
             </span>
 
-            <h1>
-                AI-Based Resume Screening
-                <span>& Job Recommendation</span>
-            </h1>
+        </h1>
 
-            <p>
-                Upload your resume and let our AI system analyze
-                your skills, calculate job compatibility, and
-                recommend suitable job roles.
-            </p>
 
-            <a
-                href="#analyzer"
-                class="hero-btn"
-            >
-                Analyze My Resume →
-            </a>
+        <p>
 
-        </div>
+            Upload your resume and let our AI system
+            analyze your skills, calculate job matching
+            scores, and recommend suitable job roles.
+
+        </p>
+
+
+        <a
+            href="#analyze"
+            class="hero-btn"
+        >
+
+            Analyze My Resume
+
+        </a>
 
     </div>
 
 </section>
 
 
-<!-- ================= FEATURES ================= -->
+<!-- =====================================================
+     FEATURES
+===================================================== -->
 
-<section class="features" id="features">
+<section
+    class="features-section"
+    id="features"
+>
 
     <div class="section-title">
 
@@ -94,14 +136,17 @@
         </h2>
 
         <p>
-            Our system uses AI and NLP techniques to analyze
-            your resume and recommend relevant jobs.
+            Simple AI-powered tools to understand
+            your resume and job compatibility.
         </p>
 
     </div>
 
 
-    <div class="feature-grid">
+    <div class="features-grid">
+
+
+        <!-- Feature 1 -->
 
         <div class="feature-card">
 
@@ -110,16 +155,18 @@
             </div>
 
             <h3>
-                Resume Upload
+                Resume Parsing
             </h3>
 
             <p>
-                Upload your resume in PDF or TXT format
-                for automatic analysis.
+                Extract information from PDF
+                and TXT resumes automatically.
             </p>
 
         </div>
 
+
+        <!-- Feature 2 -->
 
         <div class="feature-card">
 
@@ -128,16 +175,18 @@
             </div>
 
             <h3>
-                AI Analysis
+                AI Matching
             </h3>
 
             <p>
-                TF-IDF and cosine similarity are used to
-                analyze resume-job compatibility.
+                TF-IDF and cosine similarity
+                are used for job matching.
             </p>
 
         </div>
 
+
+        <!-- Feature 3 -->
 
         <div class="feature-card">
 
@@ -146,16 +195,18 @@
             </div>
 
             <h3>
-                Job Recommendation
+                Skill Detection
             </h3>
 
             <p>
-                Get job recommendations based on your
-                skills and resume content.
+                Detect technical skills from
+                your resume automatically.
             </p>
 
         </div>
 
+
+        <!-- Feature 4 -->
 
         <div class="feature-card">
 
@@ -164,32 +215,35 @@
             </div>
 
             <h3>
-                Match Score
+                Job Recommendation
             </h3>
 
             <p>
-                View NLP similarity, skill match and
-                final compatibility score.
+                Get ranked job roles based on
+                your resume profile.
             </p>
 
         </div>
+
 
     </div>
 
 </section>
 
 
-<!-- ================= ANALYZER ================= -->
+<!-- =====================================================
+     ANALYZE SECTION
+===================================================== -->
 
 <section
-    class="analyzer-section"
-    id="analyzer"
+    class="analyze-section"
+    id="analyze"
 >
 
     <div class="section-title">
 
         <span>
-            RESUME ANALYZER
+            AI ANALYSIS
         </span>
 
         <h2>
@@ -197,25 +251,31 @@
         </h2>
 
         <p>
-            Upload your resume and get AI-powered
-            job recommendations.
+            Upload your resume in PDF or TXT format.
         </p>
 
     </div>
 
 
+    <!-- =================================================
+         UPLOAD CARD
+    ================================================== -->
+
     <div class="upload-card">
 
+
         <div class="upload-icon">
-            📤
+            📄
         </div>
+
 
         <h3>
             Upload Resume
         </h3>
 
+
         <p>
-            Supported formats: PDF and TXT
+            Supported formats: PDF, TXT
         </p>
 
 
@@ -223,9 +283,18 @@
             action="{{ url_for('analyze') }}"
             method="POST"
             enctype="multipart/form-data"
+            class="upload-form"
         >
 
-            <div class="file-input">
+
+            <label
+                for="resume"
+                class="file-label"
+            >
+
+                <span>
+                    Choose Resume
+                </span>
 
                 <input
                     type="file"
@@ -235,11 +304,7 @@
                     required
                 >
 
-                <label for="resume">
-                    Choose Resume
-                </label>
-
-            </div>
+            </label>
 
 
             <div
@@ -254,160 +319,218 @@
                 type="submit"
                 class="analyze-btn"
             >
+
                 🤖 Analyze Resume
+
             </button>
+
 
         </form>
 
     </div>
 
-</section>
+
+    <!-- =================================================
+         ERROR
+    ================================================== -->
+
+    {% if error %}
+
+    <div class="error-box">
+
+        ⚠️ {{ error }}
+
+    </div>
+
+    {% endif %}
 
 
-<!-- ================= RESULT ================= -->
+    <!-- =================================================
+         RESULTS
+    ================================================== -->
 
-{% if results %}
+    {% if results %}
 
-<section class="result-section">
 
-    <div class="result-header">
+    <div class="results-section">
 
-        <div>
 
-            <span>
-                AI ANALYSIS RESULT
-            </span>
+        <!-- =============================================
+             RESULT HEADER
+        ============================================== -->
 
-            <h2>
-                {{ resume_name }}
-            </h2>
+        <div class="result-header">
+
+
+            <div>
+
+                <span class="result-label">
+                    AI ANALYSIS COMPLETE
+                </span>
+
+                <h2>
+                    Resume Analysis Results
+                </h2>
+
+                <p>
+
+                    Resume:
+                    <strong>
+                        {{ resume_name }}
+                    </strong>
+
+                </p>
+
+            </div>
+
+
+            <a
+                href="{{ url_for('download_report') }}"
+                class="download-btn"
+            >
+
+                📥 Download Report
+
+            </a>
+
 
         </div>
 
 
-        <!-- TOP MATCH -->
+        <!-- =============================================
+             TOP RECOMMENDATION
+        ============================================== -->
 
         <div class="top-recommendation">
 
-            <small>
-                ⭐ TOP MATCH
-            </small>
-
-            <strong>
-                {{ results[0].title }}
-            </strong>
-
-            <b>
-                {{ results[0].score }}%
-            </b>
-
-        </div>
-
-
-        <!-- DOWNLOAD REPORT -->
-
-        <a
-            href="{{ url_for('download_report') }}"
-            class="download-btn"
-        >
-            📥 Download Analysis Report
-        </a>
-
-    </div>
-
-
-    <!-- ================= DETECTED SKILLS ================= -->
-
-    <div class="skills-box">
-
-        <div class="result-title">
-
-            <span class="result-icon">
-                🧠
-            </span>
 
             <div>
 
-                <h3>
-                    Detected Skills
-                </h3>
+                <small>
+                    ⭐ TOP MATCH
+                </small>
 
-                <p>
-                    Skills identified from your resume
-                </p>
+                <strong>
+                    {{ results[0].title }}
+                </strong>
 
             </div>
+
+
+            <div class="top-score">
+
+                {{ results[0].score }}%
+
+            </div>
+
 
         </div>
 
 
-        <div class="skill-tags">
+        <!-- =============================================
+             DETECTED SKILLS
+        ============================================== -->
+
+        <div class="result-card skills-card">
+
+
+            <div class="card-heading">
+
+                <div class="card-icon">
+                    🛠️
+                </div>
+
+                <div>
+
+                    <h3>
+                        Detected Skills
+                    </h3>
+
+                    <p>
+                        Skills identified from your resume
+                    </p>
+
+                </div>
+
+            </div>
+
 
             {% if skills %}
 
+            <div class="skills-list">
+
                 {% for skill in skills %}
 
-                    <span class="skill-tag">
-                        {{ skill }}
-                    </span>
+                <span class="skill-tag">
+
+                    {{ skill }}
+
+                </span>
 
                 {% endfor %}
 
+            </div>
+
             {% else %}
 
-                <span class="no-skills">
-                    No predefined skills detected.
-                </span>
+            <p class="no-data">
+                No specific skills detected.
+            </p>
 
             {% endif %}
 
+
         </div>
 
-    </div>
+
+        <!-- =============================================
+             JOB RECOMMENDATIONS
+        ============================================== -->
+
+        <div class="result-card">
 
 
-    <!-- ================= JOB RESULTS ================= -->
+            <div class="card-heading">
 
-    <div class="jobs-section">
+                <div class="card-icon">
+                    💼
+                </div>
 
-        <div class="result-title">
+                <div>
 
-            <span class="result-icon">
-                🎯
-            </span>
+                    <h3>
+                        Recommended Job Roles
+                    </h3>
 
-            <div>
+                    <p>
+                        Jobs ranked based on AI matching
+                    </p>
 
-                <h3>
-                    Recommended Job Roles
-                </h3>
-
-                <p>
-                    Jobs ranked based on resume compatibility
-                </p>
+                </div>
 
             </div>
 
-        </div>
+
+            <div class="jobs-list">
 
 
-        <div class="job-list">
+                {% for job in results %}
 
-            {% for job in results %}
 
-            <div class="job-card">
+                <div class="job-card">
 
-                <!-- JOB HEADER -->
 
-                <div class="job-header">
+                    <div class="job-top">
 
-                    <div class="job-name">
 
                         <div class="job-number">
+
                             {{ loop.index }}
+
                         </div>
 
-                        <div>
+
+                        <div class="job-info">
 
                             <h3>
                                 {{ job.title }}
@@ -419,251 +542,243 @@
 
                         </div>
 
+
+                        <div class="score-circle">
+
+                            <span>
+                                {{ job.score }}%
+                            </span>
+
+                            <small>
+                                Match
+                            </small>
+
+                        </div>
+
+
                     </div>
 
 
-                    <div class="job-score">
+                    <!-- =================================
+                         SCORE DETAILS
+                    ================================== -->
 
-                        <strong>
-                            {{ job.score }}%
-                        </strong>
+                    <div class="score-details">
 
-                        <span>
-                            Match
+
+                        <div class="score-item">
+
+
+                            <div class="score-label">
+
+                                <span>
+                                    NLP Similarity
+                                </span>
+
+                                <strong>
+                                    {{ job.nlp_score }}%
+                                </strong>
+
+                            </div>
+
+
+                            <div class="progress">
+
+                                <div
+                                    class="progress-bar"
+                                    style="width: {{ job.nlp_score }}%;"
+                                ></div>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <div class="score-item">
+
+
+                            <div class="score-label">
+
+                                <span>
+                                    Skill Match
+                                </span>
+
+                                <strong>
+                                    {{ job.skill_score }}%
+                                </strong>
+
+                            </div>
+
+
+                            <div class="progress">
+
+                                <div
+                                    class="progress-bar skill-progress"
+                                    style="width: {{ job.skill_score }}%;"
+                                ></div>
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- =================================
+                         MATCHED SKILLS
+                    ================================== -->
+
+                    {% if job.matched_skills %}
+
+                    <div class="matched-area">
+
+                        <span class="matched-title">
+                            Matched Skills:
+                        </span>
+
+
+                        <div class="matched-skills">
+
+                            {% for skill in job.matched_skills %}
+
+                            <span>
+                                {{ skill }}
+                            </span>
+
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                    {% else %}
+
+                    <div class="matched-area">
+
+                        <span class="matched-title">
+                            Matched Skills:
+                        </span>
+
+                        <span class="no-match">
+                            No matching skills
                         </span>
 
                     </div>
 
-                </div>
+                    {% endif %}
 
-
-                <!-- SCORE DETAILS -->
-
-                <div class="score-details">
-
-
-                    <!-- NLP SIMILARITY -->
-
-                    <div class="score-item">
-
-                        <div class="score-label">
-
-                            <span>
-                                NLP Similarity
-                            </span>
-
-                            <b>
-                                {{ job.nlp_score }}%
-                            </b>
-
-                        </div>
-
-                        <div class="progress-bar">
-
-                            <div
-                                class="progress-fill"
-                                style="width: {{ job.nlp_score }}%;"
-                            ></div>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- SKILL MATCH -->
-
-                    <div class="score-item">
-
-                        <div class="score-label">
-
-                            <span>
-                                Skill Match
-                            </span>
-
-                            <b>
-                                {{ job.skill_score }}%
-                            </b>
-
-                        </div>
-
-                        <div class="progress-bar">
-
-                            <div
-                                class="progress-fill"
-                                style="width: {{ job.skill_score }}%;"
-                            ></div>
-
-                        </div>
-
-                    </div>
 
                 </div>
 
 
-                <!-- MATCHED SKILLS -->
+                {% endfor %}
 
-                {% if job.matched_skills %}
-
-                <div class="matched-skills">
-
-                    <span>
-                        Matched Skills:
-                    </span>
-
-                    {% for skill in job.matched_skills %}
-
-                        <small>
-                            {{ skill }}
-                        </small>
-
-                    {% endfor %}
-
-                </div>
-
-                {% endif %}
 
             </div>
 
-            {% endfor %}
+        </div>
+
+
+        <!-- =============================================
+             SCORE CALCULATION
+        ============================================== -->
+
+        <div class="calculation-card">
+
+
+            <div class="calculation-icon">
+                🧮
+            </div>
+
+
+            <div>
+
+                <h3>
+                    How the Score is Calculated
+                </h3>
+
+                <p>
+
+                    <strong>
+                        Final Score
+                    </strong>
+
+                    =
+
+                    <strong>
+                        60% NLP Similarity
+                    </strong>
+
+                    +
+
+                    <strong>
+                        40% Skill Match
+                    </strong>
+
+                </p>
+
+                <small>
+
+                    The system combines semantic resume-job
+                    similarity with detected skill matching.
+
+                </small>
+
+            </div>
+
 
         </div>
 
-    </div>
 
+        <!-- =============================================
+             DOWNLOAD
+        ============================================== -->
 
-    <!-- ================= SCORE CALCULATION ================= -->
+        <div class="download-area">
 
-    <div class="calculation-box">
+            <a
+                href="{{ url_for('download_report') }}"
+                class="download-btn large-download"
+            >
 
-        <div class="calculation-icon">
-            📊
-        </div>
+                📥 Download Full Analysis Report
 
-        <div>
-
-            <h3>
-                How is the score calculated?
-            </h3>
-
-            <p>
-                Final Match Score =
-                <strong>
-                    60% NLP Similarity
-                </strong>
-                +
-                <strong>
-                    40% Skill Match
-                </strong>
-            </p>
-
-            <small>
-                The system combines resume content similarity
-                and detected skill matching to calculate the
-                final job compatibility score.
-            </small>
+            </a>
 
         </div>
 
-    </div>
-
-
-    <!-- ================= DOWNLOAD AGAIN ================= -->
-
-    <div class="download-area">
-
-        <a
-            href="{{ url_for('download_report') }}"
-            class="download-btn large-download"
-        >
-            📥 Download Full Analysis Report
-        </a>
 
     </div>
 
 
-    <!-- ================= DISCLAIMER ================= -->
+    {% endif %}
 
-    <div class="disclaimer">
-
-        <strong>
-            ⚠️ Note:
-        </strong>
-
-        <span>
-            This AI-based recommendation is intended for
-            informational purposes. Final job selection
-            depends on company requirements, interview
-            performance and other factors.
-        </span>
-
-    </div>
-
-</section>
-
-{% endif %}
-
-
-<!-- ================= ABOUT ================= -->
-
-<section
-    class="about-section"
-    id="about"
->
-
-    <div class="section-title">
-
-        <span>
-            ABOUT PROJECT
-        </span>
-
-        <h2>
-            AI Resume Screening System
-        </h2>
-
-    </div>
-
-
-    <div class="about-card">
-
-        <p>
-            The AI-Based Resume Screening and Job Recommendation
-            System is a web-based application designed to analyze
-            resumes automatically using Natural Language Processing
-            techniques.
-        </p>
-
-        <p>
-            The system extracts important skills from the resume
-            and compares the resume content with predefined job
-            profiles using TF-IDF and cosine similarity.
-        </p>
-
-        <p>
-            Based on the analysis, the system calculates a final
-            compatibility score and displays suitable job roles
-            for the candidate.
-        </p>
-
-    </div>
 
 </section>
 
 
-<!-- ================= FOOTER ================= -->
+<!-- =====================================================
+     FOOTER
+===================================================== -->
 
 <footer class="footer">
 
+
     <div class="footer-content">
+
 
         <div>
 
             <h3>
-                AI Resume Analyzer
+                ResumeAI
             </h3>
 
             <p>
-                AI-Based Resume Screening and Job Recommendation
-                System
+                AI-Based Resume Screening and
+                Job Recommendation System.
             </p>
 
         </div>
@@ -679,30 +794,30 @@
                 Features
             </a>
 
-            <a href="#analyzer">
-                Analyzer
-            </a>
-
-            <a href="#about">
-                About
+            <a href="#analyze">
+                Analyze
             </a>
 
         </div>
 
+
     </div>
 
 
-    <div class="footer-bottom">
+    <div class="copyright">
 
         © 2026 AI Resume Screening Project.
         All Rights Reserved.
 
     </div>
 
+
 </footer>
 
 
-<!-- ================= JAVASCRIPT ================= -->
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
 
 <script>
 
@@ -719,7 +834,10 @@
             "change",
             function () {
 
-                if (this.files.length > 0) {
+                if (
+                    this.files &&
+                    this.files.length > 0
+                ) {
 
                     fileName.textContent =
                         "Selected: " +
@@ -741,4 +859,5 @@
 
 
 </body>
+
 </html>
