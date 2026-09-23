@@ -11,6 +11,8 @@ from flask import (
 
 import mysql.connector
 
+from pypdf import PdfReader
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -19,7 +21,7 @@ from reportlab.pdfgen import canvas
 
 
 # =========================================================
-# FLASK CONFIGURATION
+# FLASK APP
 # =========================================================
 
 app = Flask(__name__)
@@ -29,14 +31,19 @@ app.secret_key = os.getenv(
     "ai-resume-screening-project-secret"
 )
 
-app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 
-app.config["UPLOAD_FOLDER"] = "uploads"
+# =========================================================
+# UPLOAD FOLDER
+# =========================================================
+
+UPLOAD_FOLDER = "uploads"
 
 os.makedirs(
-    app.config["UPLOAD_FOLDER"],
+    UPLOAD_FOLDER,
     exist_ok=True
 )
+
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 
 # =========================================================
@@ -47,135 +54,56 @@ JOB_PROFILES = [
 
     {
         "title": "Python Developer",
-
-        "skills": [
-            "python",
-            "flask",
-            "django",
-            "mysql",
-            "sql",
-            "git",
-            "api",
-            "rest"
-        ],
-
-        "description":
-            "Develop Python applications, APIs and backend services.",
-
-        "keywords":
-            "python flask django mysql sql git api rest "
-            "backend programming software development"
+        "description": """
+        Python Flask Django REST API MySQL SQL backend
+        programming software development database
+        object oriented programming
+        """
     },
-
 
     {
         "title": "Full Stack Developer",
-
-        "skills": [
-            "python",
-            "html",
-            "css",
-            "javascript",
-            "react",
-            "mysql",
-            "flask",
-            "api"
-        ],
-
-        "description":
-            "Build complete web applications using frontend and backend technologies.",
-
-        "keywords":
-            "python html css javascript react mysql flask "
-            "api full stack frontend backend web development"
+        "description": """
+        Python Flask HTML CSS JavaScript React
+        MySQL SQL REST API frontend backend
+        web development full stack development
+        """
     },
-
 
     {
         "title": "Frontend Developer",
-
-        "skills": [
-            "html",
-            "css",
-            "javascript",
-            "react",
-            "bootstrap",
-            "responsive",
-            "git"
-        ],
-
-        "description":
-            "Create responsive and interactive web interfaces.",
-
-        "keywords":
-            "html css javascript react bootstrap "
-            "responsive ui frontend web git"
+        "description": """
+        HTML CSS JavaScript React frontend
+        responsive web design UI UX Bootstrap
+        web development
+        """
     },
-
 
     {
         "title": "Data Analyst",
-
-        "skills": [
-            "python",
-            "sql",
-            "excel",
-            "pandas",
-            "numpy",
-            "statistics",
-            "power bi"
-        ],
-
-        "description":
-            "Analyze data and create useful reports and insights.",
-
-        "keywords":
-            "python sql excel pandas numpy statistics "
-            "power bi data analysis visualization"
+        "description": """
+        Python SQL MySQL Excel pandas numpy
+        data analysis data visualization statistics
+        Power BI
+        """
     },
-
 
     {
         "title": "AI / ML Intern",
-
-        "skills": [
-            "python",
-            "machine learning",
-            "ai",
-            "pandas",
-            "numpy",
-            "scikit-learn",
-            "nlp"
-        ],
-
-        "description":
-            "Work with machine learning, NLP and AI applications.",
-
-        "keywords":
-            "python machine learning ai pandas numpy "
-            "scikit-learn nlp artificial intelligence"
+        "description": """
+        Python machine learning artificial intelligence
+        AI data science pandas numpy scikit learn
+        algorithms statistics
+        """
     },
-
 
     {
         "title": "Software Developer",
-
-        "skills": [
-            "python",
-            "java",
-            "sql",
-            "git",
-            "oop",
-            "api",
-            "testing"
-        ],
-
-        "description":
-            "Develop, test and maintain software applications.",
-
-        "keywords":
-            "python java sql git oop api "
-            "software development testing programming"
+        "description": """
+        Python Java JavaScript programming
+        software development SQL MySQL
+        OOP data structures algorithms
+        """
     }
 
 ]
@@ -187,39 +115,46 @@ JOB_PROFILES = [
 
 def get_connection():
 
-    return mysql.connector.connect(
+    try:
 
-        host=os.getenv(
-            "DB_HOST",
-            "localhost"
-        ),
+        connection = mysql.connector.connect(
 
-        user=os.getenv(
-            "DB_USER",
-            "root"
-        ),
+            host=os.getenv(
+                "DB_HOST",
+                "localhost"
+            ),
 
-        password=os.getenv(
-            "DB_PASSWORD",
-            ""
-        ),
+            user=os.getenv(
+                "DB_USER",
+                "root"
+            ),
 
-        database=os.getenv(
-            "DB_NAME",
-            "ai_resume_db"
-        ),
+            password=os.getenv(
+                "DB_PASSWORD",
+                "saravanan2005"
+            ),
 
-        port=int(
-            os.getenv(
-                "DB_PORT",
-                "3306"
+            database=os.getenv(
+                "DB_NAME",
+                "resume_db"
             )
+
         )
-    )
+
+        return connection
+
+    except mysql.connector.Error as error:
+
+        print(
+            "Database connection error:",
+            error
+        )
+
+        return None
 
 
 # =========================================================
-# RESUME TEXT EXTRACTION
+# EXTRACT TEXT FROM PDF / TXT
 # =========================================================
 
 def extract_text(file_path):
@@ -228,8 +163,10 @@ def extract_text(file_path):
         file_path
     )[1].lower()
 
-
+    # -------------------------
     # TXT FILE
+    # -------------------------
+
     if extension == ".txt":
 
         try:
@@ -246,55 +183,63 @@ def extract_text(file_path):
         except Exception as error:
 
             print(
-                "TXT extraction error:",
+                "TXT reading error:",
                 error
             )
 
             return ""
 
 
+    # -------------------------
     # PDF FILE
+    # -------------------------
+
     if extension == ".pdf":
 
-        try:
+        text = ""
 
-            from pypdf import PdfReader
+        try:
 
             reader = PdfReader(
                 file_path
             )
 
-            text = ""
-
             for page in reader.pages:
 
-                text += (
-                    page.extract_text()
-                    or ""
-                )
+                page_text = page.extract_text()
 
-            return text
+                if page_text:
+
+                    text += page_text + "\n"
 
         except Exception as error:
 
             print(
-                "PDF extraction error:",
+                "PDF reading error:",
                 error
             )
 
             return ""
+
+        return text
 
 
     return ""
 
 
 # =========================================================
-# TEXT NORMALIZATION
+# NORMALIZE TEXT
 # =========================================================
 
 def normalize_text(text):
 
     text = text.lower()
+
+    text = re.sub(
+        r"[^a-zA-Z0-9+#.\s]",
+        " ",
+        text
+    )
 
     text = re.sub(
         r"\s+",
@@ -306,230 +251,237 @@ def normalize_text(text):
 
 
 # =========================================================
-# SKILL EXTRACTION
+# SKILLS
 # =========================================================
 
-def extract_skills(resume_text):
+SKILLS = [
 
-    resume_text = normalize_text(
-        resume_text
+    "python",
+    "java",
+    "javascript",
+    "html",
+    "css",
+    "react",
+    "flask",
+    "django",
+    "mysql",
+    "sql",
+    "rest api",
+    "api",
+    "bootstrap",
+    "php",
+    "c",
+    "c++",
+    "excel",
+    "pandas",
+    "numpy",
+    "machine learning",
+    "artificial intelligence",
+    "ai",
+    "data science",
+    "power bi",
+    "git",
+    "github",
+    "docker",
+    "linux",
+    "oop",
+    "data structures",
+    "algorithms",
+    "web development"
+]
+
+
+# =========================================================
+# EXTRACT SKILLS
+# =========================================================
+
+def extract_skills(text):
+
+    normalized = normalize_text(
+        text
     )
 
-    detected_skills = []
+    detected = []
 
+    for skill in SKILLS:
 
-    # Collect all skills
-
-    all_skills = set()
-
-    for job in JOB_PROFILES:
-
-        for skill in job["skills"]:
-
-            all_skills.add(
-                skill
-            )
-
-
-    # Check longer skills first
-
-    all_skills = sorted(
-        all_skills,
-        key=len,
-        reverse=True
-    )
-
-
-    # Search skills
-
-    for skill in all_skills:
-
-        pattern = (
-
-            r"(?<![a-z0-9+#.])"
-
-            + re.escape(
-                skill.lower()
-            )
-
-            + r"(?![a-z0-9+#.])"
+        skill_normalized = normalize_text(
+            skill
         )
 
+        if skill_normalized in normalized:
 
-        if re.search(
-            pattern,
-            resume_text
-        ):
-
-            detected_skills.append(
+            detected.append(
                 skill
             )
 
-
-    return detected_skills
+    return sorted(
+        list(
+            set(detected)
+        )
+    )
 
 
 # =========================================================
-# AI / NLP RECOMMENDATION
+# CALCULATE JOB RECOMMENDATIONS
 # =========================================================
 
 def calculate_recommendations(
     resume_text
 ):
 
-    resume_text = normalize_text(
+    normalized_resume = normalize_text(
         resume_text
     )
 
-
-    # -----------------------------------------------------
-    # STEP 1: SKILL EXTRACTION
-    # -----------------------------------------------------
-
-    resume_skills = extract_skills(
+    detected_skills = extract_skills(
         resume_text
     )
 
+    recommendations = []
+
 
     # -----------------------------------------------------
-    # STEP 2: PREPARE TEXT DOCUMENTS
+    # TF-IDF NLP
     # -----------------------------------------------------
 
     documents = [
 
-        resume_text
+        normalized_resume
 
     ] + [
 
-        job["keywords"]
+        normalize_text(
+            job["description"]
+        )
 
         for job in JOB_PROFILES
 
     ]
 
 
-    # -----------------------------------------------------
-    # STEP 3: TF-IDF
-    # -----------------------------------------------------
-
     vectorizer = TfidfVectorizer(
-
-        stop_words="english",
-
-        ngram_range=(1, 2)
-
+        stop_words="english"
     )
 
 
-    tfidf_matrix = vectorizer.fit_transform(
-        documents
-    )
+    try:
+
+        tfidf_matrix = vectorizer.fit_transform(
+            documents
+        )
+
+        similarity_scores = cosine_similarity(
+            tfidf_matrix[0:1],
+            tfidf_matrix[1:]
+        )[0]
+
+    except Exception as error:
+
+        print(
+            "NLP error:",
+            error
+        )
+
+        similarity_scores = [
+            0
+            for _ in JOB_PROFILES
+        ]
 
 
     # -----------------------------------------------------
-    # STEP 4: COSINE SIMILARITY
-    # -----------------------------------------------------
-
-    similarity_scores = cosine_similarity(
-
-        tfidf_matrix[0:1],
-
-        tfidf_matrix[1:]
-
-    ).flatten()
-
-
-    recommendations = []
-
-
-    # -----------------------------------------------------
-    # STEP 5: CALCULATE SCORE
+    # PROCESS EACH JOB
     # -----------------------------------------------------
 
     for index, job in enumerate(
         JOB_PROFILES
     ):
 
-        matched_skills = []
-
-
-        for skill in job["skills"]:
-
-            if skill in resume_skills:
-
-                matched_skills.append(
-                    skill
-                )
-
-
-        # Skill match
-
-        skill_score = (
-
-            len(matched_skills)
-
-            /
-
-            len(job["skills"])
-
-        ) * 100
-
-
-        # NLP similarity
-
         nlp_score = (
-
             similarity_scores[index]
-
             * 100
-
         )
 
 
-        # Final score
+        # Job skills
+
+        job_skills = extract_skills(
+            job["description"]
+        )
+
+
+        # Matching skills
+
+        matched_skills = [
+
+            skill
+
+            for skill in job_skills
+
+            if skill in detected_skills
+
+        ]
+
+
+        # Skill score
+
+        if job_skills:
+
+            skill_score = (
+                len(matched_skills)
+                / len(job_skills)
+            ) * 100
+
+        else:
+
+            skill_score = 0
+
+
+        # -------------------------------------------------
+        # FINAL SCORE
+        # -------------------------------------------------
 
         final_score = (
 
-            (nlp_score * 0.60)
+            nlp_score * 0.60
 
-            +
+        ) + (
 
-            (skill_score * 0.40)
+            skill_score * 0.40
 
         )
 
 
         recommendations.append({
 
-            "title":
-                job["title"],
+            "title": job["title"],
 
-            "description":
-                job["description"],
+            "description": job["description"].strip(),
 
-            "score":
-                round(final_score),
+            "score": round(
+                final_score
+            ),
 
-            "nlp_score":
-                round(nlp_score),
+            "nlp_score": round(
+                nlp_score
+            ),
 
-            "skill_score":
-                round(skill_score),
+            "skill_score": round(
+                skill_score
+            ),
 
-            "matched":
-                matched_skills
+            "matched_skills": matched_skills
 
         })
 
 
     # -----------------------------------------------------
-    # STEP 6: SORT JOBS
+    # SORT HIGH TO LOW
     # -----------------------------------------------------
 
     recommendations.sort(
 
-        key=lambda item:
-            item["score"],
+        key=lambda x: x["score"],
 
         reverse=True
 
@@ -538,7 +490,7 @@ def calculate_recommendations(
 
     return (
         recommendations,
-        resume_skills
+        detected_skills
     )
 
 
@@ -547,54 +499,106 @@ def calculate_recommendations(
 # =========================================================
 
 def save_result(
-
-    filename,
-    skills,
+    resume_name,
+    detected_skills,
     recommendations
-
 ):
 
-    try:
+    connection = get_connection()
 
-        connection = get_connection()
+    if not connection:
+
+        return
+
+
+    cursor = None
+
+    try:
 
         cursor = connection.cursor()
 
 
-        top_job = recommendations[0]
+        # -------------------------------------------------
+        # CREATE TABLE
+        # -------------------------------------------------
 
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS
+            resume_results (
 
-        query = """
+                id INT AUTO_INCREMENT PRIMARY KEY,
 
-        INSERT INTO resume_results
+                resume_name VARCHAR(255),
 
-        (
-            resume_name,
-            extracted_skills,
-            recommended_job,
-            match_score
+                detected_skills TEXT,
+
+                top_job VARCHAR(255),
+
+                top_score INT,
+
+                created_at TIMESTAMP
+                DEFAULT CURRENT_TIMESTAMP
+
+            )
+            """
         )
 
-        VALUES (%s, %s, %s, %s)
 
-        """
+        # -------------------------------------------------
+        # TOP JOB
+        # -------------------------------------------------
 
+        top_job = ""
+
+        top_score = 0
+
+        if recommendations:
+
+            top_job = recommendations[0][
+                "title"
+            ]
+
+            top_score = recommendations[0][
+                "score"
+            ]
+
+
+        # -------------------------------------------------
+        # INSERT
+        # -------------------------------------------------
 
         cursor.execute(
 
-            query,
+            """
+            INSERT INTO resume_results
+            (
+                resume_name,
+                detected_skills,
+                top_job,
+                top_score
+            )
+
+            VALUES
+            (
+                %s,
+                %s,
+                %s,
+                %s
+            )
+            """,
 
             (
 
-                filename,
+                resume_name,
 
                 ", ".join(
-                    skills
+                    detected_skills
                 ),
 
-                top_job["title"],
+                top_job,
 
-                top_job["score"]
+                top_score
 
             )
 
@@ -603,207 +607,244 @@ def save_result(
 
         connection.commit()
 
-        cursor.close()
 
-        connection.close()
-
-
-    except Exception as error:
+    except mysql.connector.Error as error:
 
         print(
-            "Database save skipped:",
+            "Database save error:",
             error
         )
 
 
+    finally:
+
+        if cursor:
+
+            cursor.close()
+
+        connection.close()
+
+
 # =========================================================
-# HOME / RESUME SCREENING
+# HOME PAGE
 # =========================================================
 
 @app.route(
     "/",
-    methods=["GET", "POST"]
+    methods=["GET"]
 )
-
 def index():
 
-    recommendations = None
+    return render_template(
 
-    detected_skills = []
+        "index.html",
 
-    resume_name = None
+        results=None,
 
-    error = None
+        skills=[],
+
+        resume_name=None,
+
+        error=None
+
+    )
 
 
-    # =====================================================
-    # POST REQUEST
-    # =====================================================
+# =========================================================
+# ANALYZE RESUME
+# =========================================================
 
-    if request.method == "POST":
+@app.route(
+    "/analyze",
+    methods=["POST"]
+)
+def analyze():
 
-        uploaded_file = request.files.get(
-            "resume"
+    uploaded_file = request.files.get(
+        "resume"
+    )
+
+
+    # -----------------------------------------------------
+    # FILE CHECK
+    # -----------------------------------------------------
+
+    if (
+
+        not uploaded_file
+
+        or not uploaded_file.filename
+
+    ):
+
+        return render_template(
+
+            "index.html",
+
+            results=None,
+
+            skills=[],
+
+            resume_name=None,
+
+            error="Please select a resume."
+
         )
 
 
-        # -------------------------------------------------
-        # CHECK FILE
-        # -------------------------------------------------
+    # -----------------------------------------------------
+    # EXTENSION CHECK
+    # -----------------------------------------------------
 
-        if (
+    extension = os.path.splitext(
 
-            not uploaded_file
+        uploaded_file.filename
 
-            or not uploaded_file.filename
+    )[1].lower()
 
-        ):
 
-            error = (
-                "Please select a resume."
+    if extension not in [
+
+        ".pdf",
+
+        ".txt"
+
+    ]:
+
+        return render_template(
+
+            "index.html",
+
+            results=None,
+
+            skills=[],
+
+            resume_name=None,
+
+            error=(
+                "Only PDF and TXT "
+                "resumes are supported."
             )
 
-
-        else:
-
-            extension = os.path.splitext(
-
-                uploaded_file.filename
-
-            )[1].lower()
+        )
 
 
-            # -------------------------------------------------
-            # FILE TYPE
-            # -------------------------------------------------
+    # -----------------------------------------------------
+    # FILE NAME
+    # -----------------------------------------------------
 
-            if extension not in [
-
-                ".pdf",
-
-                ".txt"
-
-            ]:
-
-                error = (
-
-                    "Only PDF and TXT "
-                    "resumes are supported."
-                )
+    resume_name = uploaded_file.filename
 
 
-            else:
+    safe_name = re.sub(
 
-                resume_name = (
-                    uploaded_file.filename
-                )
+        r"[^A-Za-z0-9._-]",
 
+        "_",
 
-                # -------------------------------------------------
-                # SAFE FILE NAME
-                # -------------------------------------------------
+        resume_name
 
-                safe_name = re.sub(
-
-                    r"[^A-Za-z0-9._-]",
-
-                    "_",
-
-                    resume_name
-
-                )
+    )
 
 
-                file_path = os.path.join(
+    file_path = os.path.join(
 
-                    app.config[
-                        "UPLOAD_FOLDER"
-                    ],
+        app.config["UPLOAD_FOLDER"],
 
-                    safe_name
+        safe_name
 
-                )
+    )
 
 
-                uploaded_file.save(
-                    file_path
-                )
+    uploaded_file.save(
+        file_path
+    )
 
 
-                # -------------------------------------------------
-                # EXTRACT TEXT
-                # -------------------------------------------------
+    # -----------------------------------------------------
+    # EXTRACT TEXT
+    # -----------------------------------------------------
 
-                resume_text = extract_text(
-                    file_path
-                )
-
-
-                if not resume_text.strip():
-
-                    error = (
-
-                        "Could not read the resume. "
-                        "Please upload a text-based "
-                        "PDF or TXT file."
-                    )
+    resume_text = extract_text(
+        file_path
+    )
 
 
-                else:
+    if not resume_text.strip():
 
-                    # ---------------------------------------------
-                    # AI ANALYSIS
-                    # ---------------------------------------------
+        return render_template(
 
-                    (
+            "index.html",
 
-                        recommendations,
+            results=None,
 
-                        detected_skills
+            skills=[],
 
-                    ) = calculate_recommendations(
+            resume_name=resume_name,
 
-                        resume_text
+            error=(
 
-                    )
+                "Could not read the resume. "
 
+                "Please upload a text-based "
 
-                    # ---------------------------------------------
-                    # SAVE TO DATABASE
-                    # ---------------------------------------------
+                "PDF or TXT file."
 
-                    save_result(
+            )
 
-                        resume_name,
-
-                        detected_skills,
-
-                        recommendations
-
-                    )
+        )
 
 
-                    # ---------------------------------------------
-                    # SAVE ANALYSIS FOR PDF
-                    # ---------------------------------------------
+    # -----------------------------------------------------
+    # AI ANALYSIS
+    # -----------------------------------------------------
 
-                    session["analysis"] = {
+    (
 
-                        "resume_name":
-                            resume_name,
+        recommendations,
 
-                        "skills":
-                            detected_skills,
+        detected_skills
 
-                        "results":
-                            recommendations
+    ) = calculate_recommendations(
 
-                    }
+        resume_text
+
+    )
 
 
-    # =====================================================
-    # RENDER PAGE
-    # =====================================================
+    # -----------------------------------------------------
+    # SAVE TO DATABASE
+    # -----------------------------------------------------
+
+    save_result(
+
+        resume_name,
+
+        detected_skills,
+
+        recommendations
+
+    )
+
+
+    # -----------------------------------------------------
+    # SAVE SESSION
+    # -----------------------------------------------------
+
+    session["analysis"] = {
+
+        "resume_name": resume_name,
+
+        "skills": detected_skills,
+
+        "results": recommendations
+
+    }
+
+
+    # -----------------------------------------------------
+    # SHOW RESULTS
+    # -----------------------------------------------------
 
     return render_template(
 
@@ -815,7 +856,7 @@ def index():
 
         resume_name=resume_name,
 
-        error=error
+        error=None
 
     )
 
@@ -824,20 +865,15 @@ def index():
 # DOWNLOAD PDF REPORT
 # =========================================================
 
-@app.get(
+@app.route(
     "/download-report"
 )
-
 def download_report():
 
     analysis = session.get(
         "analysis"
     )
 
-
-    # -----------------------------------------------------
-    # NO ANALYSIS
-    # -----------------------------------------------------
 
     if not analysis:
 
@@ -851,15 +887,9 @@ def download_report():
         )
 
 
-    # -----------------------------------------------------
-    # PDF PATH
-    # -----------------------------------------------------
-
     file_path = os.path.join(
 
-        app.config[
-            "UPLOAD_FOLDER"
-        ],
+        app.config["UPLOAD_FOLDER"],
 
         "AI_Resume_Analysis_Report.pdf"
 
@@ -884,16 +914,13 @@ def download_report():
     y = height - 50
 
 
-    # =====================================================
+    # -----------------------------------------------------
     # TITLE
-    # =====================================================
+    # -----------------------------------------------------
 
     pdf.setFont(
-
         "Helvetica-Bold",
-
-        20
-
+        18
     )
 
     pdf.drawString(
@@ -910,60 +937,13 @@ def download_report():
     y -= 35
 
 
-    pdf.setFont(
-
-        "Helvetica",
-
-        10
-
-    )
-
-    pdf.drawString(
-
-        50,
-
-        y,
-
-        "AI-Based Resume Screening and Job Recommendation System"
-
-    )
-
-
-    y -= 35
-
-
-    # =====================================================
+    # -----------------------------------------------------
     # RESUME NAME
-    # =====================================================
+    # -----------------------------------------------------
 
     pdf.setFont(
-
         "Helvetica-Bold",
-
-        13
-
-    )
-
-    pdf.drawString(
-
-        50,
-
-        y,
-
-        "Resume"
-
-    )
-
-
-    y -= 20
-
-
-    pdf.setFont(
-
-        "Helvetica",
-
         11
-
     )
 
     pdf.drawString(
@@ -972,26 +952,37 @@ def download_report():
 
         y,
 
-        analysis[
-            "resume_name"
-        ]
+        "Resume:"
 
     )
 
 
-    y -= 35
+    pdf.setFont(
+        "Helvetica",
+        11
+    )
+
+    pdf.drawString(
+
+        120,
+
+        y,
+
+        analysis["resume_name"]
+
+    )
 
 
-    # =====================================================
+    y -= 30
+
+
+    # -----------------------------------------------------
     # DETECTED SKILLS
-    # =====================================================
+    # -----------------------------------------------------
 
     pdf.setFont(
-
         "Helvetica-Bold",
-
-        13
-
+        12
     )
 
     pdf.drawString(
@@ -1009,106 +1000,22 @@ def download_report():
 
 
     pdf.setFont(
-
         "Helvetica",
-
         10
-
     )
 
 
     skills_text = ", ".join(
 
-        analysis[
-            "skills"
-        ]
+        analysis["skills"]
 
     )
 
-
-    # Prevent very long line
 
     if not skills_text:
 
-        skills_text = (
-            "No skills detected"
-        )
+        skills_text = "No specific skills detected."
 
-
-    # Simple wrapping
-
-    skill_words = skills_text.split()
-
-    current_line = ""
-
-    for word in skill_words:
-
-        test_line = (
-
-            current_line
-
-            + " "
-
-            + word
-
-        ).strip()
-
-
-        if len(test_line) > 90:
-
-            pdf.drawString(
-
-                50,
-
-                y,
-
-                current_line
-
-            )
-
-            y -= 15
-
-            current_line = word
-
-        else:
-
-            current_line = test_line
-
-
-    if current_line:
-
-        pdf.drawString(
-
-            50,
-
-            y,
-
-            current_line
-
-        )
-
-        y -= 20
-
-
-    y -= 15
-
-
-    # =====================================================
-    # TOP RECOMMENDATION
-    # =====================================================
-
-    top_job = analysis[
-        "results"
-    ][0]
-
-
-    pdf.setFont(
-
-        "Helvetica-Bold",
-
-        13
-
-    )
 
     pdf.drawString(
 
@@ -1116,30 +1023,7 @@ def download_report():
 
         y,
 
-        "Top Job Recommendation"
-
-    )
-
-
-    y -= 22
-
-
-    pdf.setFont(
-
-        "Helvetica-Bold",
-
-        12
-
-    )
-
-    pdf.drawString(
-
-        50,
-
-        y,
-
-        f'{top_job["title"]} - '
-        f'{top_job["score"]}%'
+        skills_text[:100]
 
     )
 
@@ -1147,16 +1031,79 @@ def download_report():
     y -= 35
 
 
-    # =====================================================
-    # JOB RECOMMENDATIONS
-    # =====================================================
+    # -----------------------------------------------------
+    # TOP RECOMMENDATION
+    # -----------------------------------------------------
+
+    results = analysis["results"]
+
+
+    if results:
+
+        top = results[0]
+
+
+        pdf.setFont(
+            "Helvetica-Bold",
+            13
+        )
+
+        pdf.drawString(
+
+            50,
+
+            y,
+
+            "Top Job Recommendation"
+
+        )
+
+
+        y -= 22
+
+
+        pdf.setFont(
+            "Helvetica-Bold",
+            11
+        )
+
+        pdf.drawString(
+
+            50,
+
+            y,
+
+            top["title"]
+
+        )
+
+
+        pdf.setFont(
+            "Helvetica",
+            11
+        )
+
+        pdf.drawString(
+
+            250,
+
+            y,
+
+            f"Match Score: {top['score']}%"
+
+        )
+
+
+        y -= 25
+
+
+    # -----------------------------------------------------
+    # ALL JOB RESULTS
+    # -----------------------------------------------------
 
     pdf.setFont(
-
         "Helvetica-Bold",
-
         13
-
     )
 
     pdf.drawString(
@@ -1165,7 +1112,7 @@ def download_report():
 
         y,
 
-        "Job Recommendations"
+        "Job Recommendation Results"
 
     )
 
@@ -1173,20 +1120,14 @@ def download_report():
     y -= 25
 
 
-    for index, job in enumerate(
-
-        analysis[
-            "results"
-        ],
-
+    for number, job in enumerate(
+        results,
         start=1
-
     ):
 
+        # New page if needed
 
-        # New page
-
-        if y < 120:
+        if y < 130:
 
             pdf.showPage()
 
@@ -1194,20 +1135,18 @@ def download_report():
 
 
         pdf.setFont(
-
             "Helvetica-Bold",
-
             11
-
         )
+
 
         pdf.drawString(
 
-            55,
+            50,
 
             y,
 
-            f'{index}. {job["title"]}'
+            f"{number}. {job['title']}"
 
         )
 
@@ -1216,26 +1155,9 @@ def download_report():
 
 
         pdf.setFont(
-
             "Helvetica",
-
             10
-
         )
-
-        pdf.drawString(
-
-            70,
-
-            y,
-
-            f'Match Score: '
-            f'{job["score"]}%'
-
-        )
-
-
-        y -= 16
 
 
         pdf.drawString(
@@ -1244,8 +1166,7 @@ def download_report():
 
             y,
 
-            f'NLP Similarity: '
-            f'{job["nlp_score"]}%'
+            f"Final Match Score: {job['score']}%"
 
         )
 
@@ -1259,8 +1180,21 @@ def download_report():
 
             y,
 
-            f'Skill Match: '
-            f'{job["skill_score"]}%'
+            f"NLP Similarity: {job['nlp_score']}%"
+
+        )
+
+
+        y -= 16
+
+
+        pdf.drawString(
+
+            70,
+
+            y,
+
+            f"Skill Match: {job['skill_score']}%"
 
         )
 
@@ -1270,7 +1204,7 @@ def download_report():
 
         matched = ", ".join(
 
-            job["matched"]
+            job["matched_skills"]
 
         )
 
@@ -1280,14 +1214,18 @@ def download_report():
             matched = "None"
 
 
+        # PDF-safe text
+
+        matched = matched[:100]
+
+
         pdf.drawString(
 
             70,
 
             y,
 
-            "Matched Skills: "
-            + matched
+            f"Matched Skills: {matched}"
 
         )
 
@@ -1295,9 +1233,9 @@ def download_report():
         y -= 28
 
 
-    # =====================================================
-    # SCORE CALCULATION
-    # =====================================================
+    # -----------------------------------------------------
+    # SCORE FORMULA
+    # -----------------------------------------------------
 
     if y < 100:
 
@@ -1307,12 +1245,10 @@ def download_report():
 
 
     pdf.setFont(
-
         "Helvetica-Bold",
-
         12
-
     )
+
 
     pdf.drawString(
 
@@ -1329,12 +1265,10 @@ def download_report():
 
 
     pdf.setFont(
-
         "Helvetica",
-
         10
-
     )
+
 
     pdf.drawString(
 
@@ -1342,9 +1276,7 @@ def download_report():
 
         y,
 
-        "Final Score = "
-        "60% NLP Similarity + "
-        "40% Skill Match"
+        "Final Score = 60% NLP Similarity + 40% Skill Match"
 
     )
 
@@ -1352,17 +1284,11 @@ def download_report():
     y -= 35
 
 
-    # =====================================================
-    # DISCLAIMER
-    # =====================================================
-
     pdf.setFont(
-
         "Helvetica-Oblique",
-
         9
-
     )
+
 
     pdf.drawString(
 
@@ -1370,8 +1296,7 @@ def download_report():
 
         y,
 
-        "This report is for project-level "
-        "recommendation purposes."
+        "This report is generated by an AI-based resume"
 
     )
 
@@ -1385,22 +1310,35 @@ def download_report():
 
         y,
 
-        "It should not be treated as an "
-        "automated hiring decision."
+        "screening system. Results are recommendations"
 
     )
 
 
-    # =====================================================
+    y -= 14
+
+
+    pdf.drawString(
+
+        50,
+
+        y,
+
+        "and should not be considered as final hiring decisions."
+
+    )
+
+
+    # -----------------------------------------------------
     # SAVE PDF
-    # =====================================================
+    # -----------------------------------------------------
 
     pdf.save()
 
 
-    # =====================================================
-    # SEND PDF TO USER
-    # =====================================================
+    # -----------------------------------------------------
+    # DOWNLOAD
+    # -----------------------------------------------------
 
     return send_file(
 
@@ -1421,24 +1359,25 @@ def download_report():
 # HEALTH CHECK
 # =========================================================
 
-@app.get(
+@app.route(
     "/health"
 )
-
 def health():
 
     return {
 
         "status": "ok",
 
-        "message":
-            "AI Resume Screening API is running"
+        "message": (
+            "AI Resume Screening "
+            "API is running"
+        )
 
     }
 
 
 # =========================================================
-# RUN APPLICATION
+# RUN LOCAL
 # =========================================================
 
 if __name__ == "__main__":
@@ -1448,15 +1387,12 @@ if __name__ == "__main__":
         host="0.0.0.0",
 
         port=int(
-
             os.getenv(
-
                 "PORT",
-
-                "5000"
-
+                5000
             )
+        ),
 
-        )
+        debug=True
 
     )
